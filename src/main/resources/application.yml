@@ -1,0 +1,75 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /shiro
+
+jdbc:
+  driver: com.mysql.cj.jdbc.Driver
+  url: jdbc:mysql://127.0.0.1:3306/rtas-shrio?useUnicode=true&charactorEncoding=utf8&useSSL=false&zeroDateTimeBehavior=convertToNull&serverTimezone=GMT%2B8
+  username: root
+  password: 123456
+
+
+mybatis_config_file: mybatis-config.xml
+mapper_path: mapper/**.xml
+entity_package: com.feng.shiro.repository.domain
+
+
+# 线程池配置
+executor:
+  core_pool_size: 5
+  max_pool_size: 10
+  queue_capacity: 1000
+  thread_name_prefix: async-service-
+  keep_alive_seconds: 5
+
+# 图形验证码
+kaptcha:
+  border: "yes"
+  border.color: 105,179,90
+  textproducer:
+    font:
+      color: blue
+      size: 30
+      names: 宋体,楷体,微软雅黑
+    char:
+      length: 4
+  image:
+    width: 120
+    height: 67
+  session:
+    key: code
+
+#Shrio配置
+shrio:
+  hashedCredentialsMatcher:
+    hashAlgorithmName: md5
+    hashIterations: 2
+  shiroFilter:
+    loginUrl: /user/authc
+    unauthorizedUrl: /user/authc
+    filterChainDefinitionMap:
+      anon:
+        image: /img/**
+        login: /user/login
+        static: /static/
+      authc:
+        other: /**
+
+spring:
+  redis:
+    database: 0
+    host: 127.0.0.1
+    port: 6379
+    password:
+    pool:
+      # 连接池最大连接数（使用负值表示没有限制）
+      max-active: 10
+      # 连接池最大阻塞等待时间（使用负值表示没有限制）
+      max-wait: -1
+      # 连接池中的最大空闲连接
+      max-idle: 10
+      # 连接池中的最小空闲连接
+      min-idle: 0
+    # 连接超时时间（毫秒）
+    timeout: 20000

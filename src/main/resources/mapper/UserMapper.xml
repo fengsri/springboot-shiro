@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.feng.shiro.repository.dao.UserDao">
+
+    <resultMap id="BaseResultMap" type="com.feng.shiro.repository.domain.User">
+        <id column="id" property="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result column="gmt_create" property="gmtCreate" jdbcType="TIMESTAMP" javaType="java.util.Date"/>
+        <result column="gmt_modified" property="gmtModified" jdbcType="TIMESTAMP" javaType="java.util.Date"/>
+        <result column="deleted" property="deleted" jdbcType="VARCHAR" javaType="java.lang.Integer"/>
+        <result column="username" property="username" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result column="telephone" property="telephone" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result column="password" property="password" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result column="email" property="email" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result column="avatar_url" property="avatarUrl" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result column="gender" property="gender" jdbcType="VARCHAR" javaType="java.lang.Integer"/>
+        <result column="description" property="description" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result column="derived_number" property="derivedNumber" jdbcType="INTEGER" javaType="java.lang.Integer"/>
+        <result column="salt" property="salt" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <association property="userRole" column="id" javaType="com.feng.shiro.repository.domain.UserRole"
+                     select="com.feng.shiro.repository.dao.UserRoleDao.getByUserId"></association>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        `username`, `telephone`, `password`, `email`, `avatar_url`, `gender`, `description`,`derived_number`,`salt`
+    </sql>
+
+    <sql id="normal_column_list">
+        `gmt_create`, `gmt_modified`, `deleted`,
+        <include refid="Base_Column_List"></include>
+    </sql>
+
+    <sql id="column_list">
+        `id`,
+        <include refid="normal_column_list"></include>
+    </sql>
+
+    <insert id="insert" parameterType="com.feng.shiro.repository.domain.User">
+        <selectKey keyProperty="id" order="AFTER" resultType="Long">
+            SELECT last_insert_id()
+        </selectKey>
+        INSERT into
+        user(<include refid="Base_Column_List"></include>)
+        values(#{username}, #{telephone}, #{password}, #{email}, #{avatarUrl}, #{gender}, #{description},#{derivedNumber},#{salt})
+    </insert>
+
+    <update id="deleteById" parameterType="long">
+        update user
+        set deleted = '1'
+        where id = #{id}
+    </update>
+
+    <select id="getById" parameterType="long" resultMap="BaseResultMap">
+        SELECT
+        <include refid="column_list"/>
+        FROM
+        user
+        WHERE
+        id=#{id} and `deleted` = '0'
+    </select>
+
+    <select id="getByTelephoneAndPassword" resultMap="BaseResultMap">
+        SELECT
+        <include refid="column_list"/>
+        FROM
+        user
+        WHERE
+        telephone=#{telephone} and password=#{password} and `deleted` = '0'
+    </select>
+
+
+    <select id="listAll" resultMap="BaseResultMap">
+        SELECT
+        <include refid="column_list"/>
+        FROM
+        user
+        where `deleted` = '0'
+        order by id desc
+        <choose>
+            <when test="offset != null and rows != null">
+                limit #{offset},#{rows}
+            </when>
+            <otherwise>
+                limit 0,10
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="count" resultType="long">
+        SELECT
+        count(*)
+        FROM
+        user
+        where  `deleted` = '0'
+    </select>
+
+    <select id="countByTelephone" parameterType="string" resultType="int">
+        select count(distinct `id`)
+        from user
+        where `telephone` = #{telephone} and `deleted` = '0'
+    </select>
+    
+
+
+    <select id="getByTelephone" parameterType="String" resultMap="BaseResultMap">
+        SELECT
+        <include refid="column_list"/>
+        FROM
+        user
+        WHERE
+        telephone=#{telephone} and `deleted` = '0'
+    </select>
+
+
+
+    <select id="getByName" resultMap="BaseResultMap">
+        SELECT
+        <include refid="column_list"/>
+        FROM
+        user
+        where `deleted` = '0' and username like concat(concat('%',#{name}),'%')
+        order by id desc
+        <choose>
+            <when test="offset != null and rows != null">
+                limit #{offset},#{rows}
+            </when>
+            <otherwise>
+                limit 0,10
+            </otherwise>
+        </choose>
+    </select>
+
+
+    <select id="getCountByName" resultType="long">
+        SELECT
+        count(*)
+        FROM
+        user
+        where `deleted` = '0' and username like concat(concat('%',#{name}),'%')
+    </select>
+
+
+    <update id="insertUpdate" parameterType="com.feng.shiro.repository.domain.User">
+        update user
+        set `username`       = #{username},
+            `telephone` = #{telephone},
+            `email` = #{email},
+            `avatar_url` = #{avatarUrl},
+            `gender` = #{gender},
+            `description` = #{description},
+            `derived_number` = #{derivedNumber},
+            `deleted` = #{deleted},
+            `password` = #{password},
+            `salt`=#{salt},
+            `gmt_modified` = current_timestamp
+        where id = #{id} and `deleted` = '0'
+    </update>
+
+    <update id="updatePassword">
+        update user
+        set
+            `password` = #{password},
+            `gmt_modified` = current_timestamp
+        where id = #{id} and `deleted` = '0'
+    </update>
+
+    <update id="update" parameterType="com.feng.shiro.repository.domain.User">
+        update user
+        set `username`       = #{username},
+            `telephone` = #{telephone},
+            `email` = #{email},
+            `avatar_url` = #{avatarUrl},
+            `gender` = #{gender},
+            `description` = #{description},
+            `derived_number` = #{derivedNumber},
+            `gmt_modified` = current_timestamp
+        where id = #{id}  and `deleted` = '0'
+    </update>
+
+</mapper>
